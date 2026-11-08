@@ -23,11 +23,11 @@ Lộ trình được sắp xếp để tạo ra một vertical slice hoạt đ�
 
 ## Phase 2 — Trích xuất PDF
 
-- [ ] Thêm module parser PDF sử dụng một thư viện phù hợp.
-- [ ] Kiểm tra chữ ký PDF và các file bị lỗi/mã hóa.
-- [ ] Trích xuất văn bản và số trang.
-- [ ] Chuẩn hóa văn bản và tạo metadata cho response.
-- [ ] Test các PDF rỗng/dạng scan và các trường hợp lỗi parser.
+- [x] Thêm module parser PDF sử dụng một thư viện phù hợp.
+- [x] Kiểm tra chữ ký PDF và các file bị lỗi/mã hóa.
+- [x] Trích xuất văn bản và số trang.
+- [x] Chuẩn hóa văn bản và tạo metadata cho response.
+- [x] Test các PDF rỗng/dạng scan và các trường hợp lỗi parser.
 
 **Tiêu chí thoát:** các PDF có văn bản hợp lệ hoạt động được; giới hạn được nêu rõ ràng; các file lỗi không làm crash ứng dụng.
 
