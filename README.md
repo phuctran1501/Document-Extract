@@ -109,4 +109,4 @@ Repository này sử dụng các workspace instructions, rules, và skills của
 - `.agents/rules/` chứa các ràng buộc có phạm vi cho Python, API contract, bảo mật, và kiểm thử.
 - `.agents/skills/` chứa các quy trình có thể tái sử dụng cho việc lên kế hoạch, triển khai, review, và chuẩn bị tích hợp ASP.NET.
 
-Hãy giao cho agent một nhiệm vụ có phạm vi rõ ràng mỗi lần. Yêu cầu agent kiểm tra và lên kế hoạch trước khi chỉnh sửa tính năng vừa/lớn. Review diff và bằng chứng kiểm thử trước khi chấp nhận kết quả.
+Yêu cầu agent kiểm tra và lên kế hoạch trước khi chỉnh sửa tính năng vừa/lớn. Review diff và bằng chứng kiểm thử trước khi chấp nhận kết quả.
