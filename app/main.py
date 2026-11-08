@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.api.routes.documents import router as documents_router
 from app.api.routes.health import router as health_router
 from app.api.routes.text import router as text_router
 from app.core.config import get_settings
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
     # 3. Register route handlers
     app.include_router(health_router)
     app.include_router(text_router, prefix=settings.api_v1_prefix)
+    app.include_router(documents_router, prefix=settings.api_v1_prefix)
 
     return app
 

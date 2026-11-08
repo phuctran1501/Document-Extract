@@ -1,6 +1,6 @@
 # Kế hoạch triển khai: Phase 2 — Trích xuất PDF (PDF Extraction)
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Hoàn thành
 - **Đặc tả liên quan:** `docs/product/requirements.md` (FR-02, FR-04, FR-05, FR-06, FR-07, FR-08, FR-09), `docs/architecture/architecture.md`, `docs/architecture/api-contract.md` (Mục 3 & 5)
 - **Issue liên quan:** Phase 2 trong `docs/development/roadmap.md`
 
@@ -25,6 +25,7 @@
 ## 2. Phạm vi (Scope)
 
 ### Trong phạm vi
+
 1. **Dependencies:**
    - Thêm `pypdf` (runtime dependency để đọc cấu trúc và trích xuất text từ file PDF).
    - Thêm `python-multipart` (runtime dependency để FastAPI tiếp nhận `multipart/form-data`).
@@ -61,6 +62,7 @@
      - Kiểm tra bảo toàn header `X-Correlation-ID`.
 
 ### Ngoài phạm vi (Explicit Non-Goals)
+
 - Không triển khai parser DOCX (dành cho Phase 3).
 - Không triển khai OCR cho PDF dạng scan (MVP không hỗ trợ OCR, báo lỗi rõ ràng theo FR-09).
 - Không lưu trữ file lên ổ đĩa hay cloud storage lâu dài.
@@ -118,6 +120,7 @@ HTTP Response: 200 OK (kèm Header X-Correlation-ID)
 
 3. **`app/schemas/document.py`**:
    - Khớp 100% với Mục 3 của `docs/architecture/api-contract.md`.
+
    ```python
    class DocumentMetadata(BaseModel):
        filename: str
@@ -125,11 +128,13 @@ HTTP Response: 200 OK (kèm Header X-Correlation-ID)
        size_bytes: int
        format: str
 
+
    class ExtractionResult(BaseModel):
        text: str
        page_count: int | None = None
        character_count: int
        word_count: int
+
 
    class DocumentExtractResponse(BaseModel):
        document: DocumentMetadata
@@ -142,6 +147,7 @@ HTTP Response: 200 OK (kèm Header X-Correlation-ID)
    - `@router.post("/extract", response_model=DocumentExtractResponse)`
 
 ### 3.3. Ảnh hưởng API Contract
+
 - Hiện thực hóa đầy đủ `POST /api/v1/documents/extract` cho định dạng PDF.
 - Hoàn toàn tương thích ngược với API Contract v1.
 
@@ -190,26 +196,26 @@ HTTP Response: 200 OK (kèm Header X-Correlation-ID)
 
 ## 5. Kế hoạch kiểm thử
 
-| Kịch bản | Mức độ test | Phương thức | Kết quả mong đợi |
-|---|---|---|---|
-| Trích xuất PDF hợp lệ 1 trang | Unit & API | `test_extract_valid_pdf` | Status `200`, text được trích xuất, `page_count=1`, `format="pdf"` |
-| Trích xuất PDF hợp lệ nhiều trang | Unit & API | `test_extract_multipage_pdf` | Status `200`, gộp text các trang, `page_count=3` |
-| File không có magic bytes `%PDF-` | Unit & API | `test_extract_invalid_magic_bytes` | Status `415`, code `UNSUPPORTED_FILE_TYPE` |
-| File rỗng 0 bytes | API | `test_extract_empty_file` | Status `400`, code `INVALID_REQUEST` |
-| File vượt quá giới hạn 10 MiB | API | `test_extract_file_too_large` | Status `413`, code `FILE_TOO_LARGE` |
-| File PDF bị hỏng (corrupted) | Unit & API | `test_extract_corrupted_pdf` | Status `422`, code `INVALID_DOCUMENT` |
-| File PDF được bảo vệ bằng mật khẩu | Unit & API | `test_extract_encrypted_pdf` | Status `422`, code `ENCRYPTED_DOCUMENT` |
-| File PDF scan không có chữ | Unit & API | `test_extract_scanned_pdf_no_text` | Status `422`, code `NO_EXTRACTABLE_TEXT` |
-| Bảo toàn header `X-Correlation-ID` | API | `test_extract_preserves_correlation_id` | Header trả về khớp với request |
+| Kịch bản                           | Mức độ test | Phương thức                             | Kết quả mong đợi                                                   |
+| ---------------------------------- | ----------- | --------------------------------------- | ------------------------------------------------------------------ |
+| Trích xuất PDF hợp lệ 1 trang      | Unit & API  | `test_extract_valid_pdf`                | Status `200`, text được trích xuất, `page_count=1`, `format="pdf"` |
+| Trích xuất PDF hợp lệ nhiều trang  | Unit & API  | `test_extract_multipage_pdf`            | Status `200`, gộp text các trang, `page_count=3`                   |
+| File không có magic bytes `%PDF-`  | Unit & API  | `test_extract_invalid_magic_bytes`      | Status `415`, code `UNSUPPORTED_FILE_TYPE`                         |
+| File rỗng 0 bytes                  | API         | `test_extract_empty_file`               | Status `400`, code `INVALID_REQUEST`                               |
+| File vượt quá giới hạn 10 MiB      | API         | `test_extract_file_too_large`           | Status `413`, code `FILE_TOO_LARGE`                                |
+| File PDF bị hỏng (corrupted)       | Unit & API  | `test_extract_corrupted_pdf`            | Status `422`, code `INVALID_DOCUMENT`                              |
+| File PDF được bảo vệ bằng mật khẩu | Unit & API  | `test_extract_encrypted_pdf`            | Status `422`, code `ENCRYPTED_DOCUMENT`                            |
+| File PDF scan không có chữ         | Unit & API  | `test_extract_scanned_pdf_no_text`      | Status `422`, code `NO_EXTRACTABLE_TEXT`                           |
+| Bảo toàn header `X-Correlation-ID` | API         | `test_extract_preserves_correlation_id` | Header trả về khớp với request                                     |
 
 ## 6. Rủi ro và biện pháp giảm thiểu
 
 - **Rủi ro cạn kiệt bộ nhớ (OOM) khi upload file lớn:**
-  - *Biện pháp:* Kiểm tra kích thước chunk khi đọc từ `UploadFile.file`, từ chối ngay lập tức khi số bytes vượt quá `max_upload_size_bytes` (10 MiB) mà không đọc toàn bộ file vào bộ nhớ.
+  - _Biện pháp:_ Kiểm tra kích thước chunk khi đọc từ `UploadFile.file`, từ chối ngay lập tức khi số bytes vượt quá `max_upload_size_bytes` (10 MiB) mà không đọc toàn bộ file vào bộ nhớ.
 - **Rủi ro PDF độc hại (PDF bomb/decompression bomb):**
-  - *Biện pháp:* `pypdf` đọc theo stream; kết hợp giới hạn kích thước upload tối đa 10 MiB và giới hạn số trang tối đa hợp lý.
+  - _Biện pháp:_ `pypdf` đọc theo stream; kết hợp giới hạn kích thước upload tối đa 10 MiB và giới hạn số trang tối đa hợp lý.
 - **Rủi ro rò rỉ nội dung file trong log:**
-  - *Biện pháp:* Tuân thủ `security.md`, tuyệt đối không ghi log nội dung file hay văn bản trích xuất; chỉ ghi log metadata kích thước, số trang và correlation ID.
+  - _Biện pháp:_ Tuân thủ `security.md`, tuyệt đối không ghi log nội dung file hay văn bản trích xuất; chỉ ghi log metadata kích thước, số trang và correlation ID.
 
 ## 7. Tài liệu cần cập nhật sau khi hoàn thành
 
@@ -224,4 +230,3 @@ $env:UV_PYTHON = "C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.12.8-window
 & "C:\Users\Admin\.local\bin\uv.exe" run ruff format --check .
 & "C:\Users\Admin\.local\bin\uv.exe" run pytest
 ```
-
