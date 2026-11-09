@@ -4,6 +4,7 @@ import io
 
 from app.core.config import get_settings
 from app.core.errors import AppException
+from app.parsers.docx_parser import DOCXParser
 from app.parsers.pdf_parser import PDFParser
 from app.schemas.document import (
     DocumentExtractResponse,
@@ -19,6 +20,7 @@ class DocumentService:
     def __init__(self) -> None:
         self.settings = get_settings()
         self.pdf_parser = PDFParser()
+        self.docx_parser = DOCXParser()
 
     async def process_document_upload(
         self,
@@ -71,13 +73,10 @@ class DocumentService:
             doc_format = "pdf"
             media_type = "application/pdf"
         elif lower_name.endswith(".docx"):
-            raise AppException(
-                status_code=415,
-                code="UNSUPPORTED_FILE_TYPE",
-                message=(
-                    "DOCX extraction will be supported in Phase 3. "
-                    "Only PDF is supported in Phase 2."
-                ),
+            doc_format = "docx"
+            media_type = (
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
             )
         else:
             raise AppException(
@@ -88,7 +87,10 @@ class DocumentService:
 
         # 5. Parse document
         stream = io.BytesIO(content)
-        page_count, raw_text = self.pdf_parser.extract(stream)
+        if doc_format == "pdf":
+            page_count, raw_text = self.pdf_parser.extract(stream)
+        else:
+            page_count, raw_text = self.docx_parser.extract(stream)
 
         # 6. Normalize extracted text & calculate deterministic statistics
         normalized_text, stats = analyze_text(raw_text)
@@ -99,7 +101,7 @@ class DocumentService:
                 status_code=422,
                 code="NO_EXTRACTABLE_TEXT",
                 message=(
-                    "The PDF document contains no extractable text. "
+                    f"The {doc_format.upper()} document contains no extractable text. "
                     "Scanned documents requiring OCR are not supported."
                 ),
             )
