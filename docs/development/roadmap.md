@@ -33,10 +33,10 @@ Lộ trình được sắp xếp để tạo ra một vertical slice hoạt đ�
 
 ## Phase 3 — Trích xuất DOCX
 
-- [ ] Thêm module parser DOCX.
-- [ ] Xác định thứ tự trích xuất đoạn văn/bảng.
-- [ ] Kiểm tra container/nội dung DOCX.
-- [ ] Thêm test cho đoạn văn, bảng, file rỗng và nội dung ZIP bị lỗi.
+- [x] Thêm module parser DOCX.
+- [x] Xác định thứ tự trích xuất đoạn văn/bảng.
+- [x] Kiểm tra container/nội dung DOCX.
+- [x] Thêm test cho đoạn văn, bảng, file rỗng và nội dung ZIP bị lỗi.
 
 **Tiêu chí thoát:** các file DOCX hợp lệ trả về văn bản và metadata mang tính xác định.
 

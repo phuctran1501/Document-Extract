@@ -1,6 +1,6 @@
 # Kế hoạch triển khai: Phase 3 — Trích xuất DOCX (DOCX Extraction)
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Hoàn thành
 - **Đặc tả liên quan:** `docs/product/requirements.md` (FR-03, FR-04, FR-05, FR-06, FR-07, FR-08, FR-09), `docs/architecture/architecture.md`, `docs/architecture/api-contract.md` (Mục 3 & 5)
 - **Issue liên quan:** Phase 3 trong `docs/development/roadmap.md`
 
