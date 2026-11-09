@@ -123,4 +123,3 @@ def test_extract_encrypted_docx() -> None:
 
     assert exc_info.value.status_code == 422
     assert exc_info.value.code == "ENCRYPTED_DOCUMENT"
-
