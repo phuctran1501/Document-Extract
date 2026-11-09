@@ -6,7 +6,7 @@
 
 DocuExtract nhận các tài liệu được hỗ trợ, trích xuất văn bản, thực hiện chuẩn hóa/phân tích nhẹ, và trả về phản hồi JSON ổn định. Dịch vụ này được thiết kế là một service chuyên biệt đứng sau ASP.NET Core API — không phải là sự thay thế cho backend nghiệp vụ chính.
 
-**Định dạng được hỗ trợ ban đầu:** PDF và DOCX (sẽ mở rộng sau phase-4).
+**Định dạng được hỗ trợ ban đầu:** PDF và DOCX (sẽ mở rộng sau phase-5).
 
 **Nguyên tắc MVP:** bắt đầu stateless và đồng bộ. Không thêm database, Redis, RabbitMQ, Celery, OCR, hay LLM cho đến khi có yêu cầu thực sự biện hộ cho điều đó.
 
