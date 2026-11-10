@@ -1,6 +1,7 @@
 """Document processing orchestration service."""
 
 import io
+import logging
 
 from app.core.config import get_settings
 from app.core.errors import AppException
@@ -12,6 +13,8 @@ from app.schemas.document import (
     ExtractionResult,
 )
 from app.services.text_service import analyze_text
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentService:
@@ -54,6 +57,13 @@ class DocumentService:
                 code="INVALID_REQUEST",
                 message="Uploaded file is empty (0 bytes).",
             )
+
+        logger.info(
+            "Processing document upload: filename=%s, size_bytes=%d",
+            safe_filename,
+            file_size,
+            extra={"doc_filename": safe_filename, "size_bytes": file_size},
+        )
 
         # 3. Validate size limit
         max_bytes = self.settings.max_upload_size_bytes
@@ -105,6 +115,23 @@ class DocumentService:
                     "Scanned documents requiring OCR are not supported."
                 ),
             )
+
+        logger.info(
+            "Document extracted successfully: filename=%s, format=%s, "
+            "size_bytes=%d, characters=%d, words=%d",
+            safe_filename,
+            doc_format,
+            file_size,
+            stats.character_count,
+            stats.word_count,
+            extra={
+                "doc_filename": safe_filename,
+                "format": doc_format,
+                "size_bytes": file_size,
+                "character_count": stats.character_count,
+                "word_count": stats.word_count,
+            },
+        )
 
         # 8. Build response model
         return DocumentExtractResponse(

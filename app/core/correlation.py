@@ -1,11 +1,15 @@
 """Correlation ID tracking across request-response cycles."""
 
+import logging
+import time
 import uuid
 from contextvars import ContextVar
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
+
+logger = logging.getLogger("app.access")
 
 CORRELATION_ID_HEADER = "X-Correlation-ID"
 
@@ -38,6 +42,36 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
 
         set_correlation_id(correlation_id)
 
-        response = await call_next(request)
-        response.headers[CORRELATION_ID_HEADER] = correlation_id
-        return response
+        start_time = time.perf_counter()
+        try:
+            response = await call_next(request)
+            duration_ms = (time.perf_counter() - start_time) * 1000
+            logger.info(
+                "Request completed: %s %s -> %d in %.2fms",
+                request.method,
+                request.url.path,
+                response.status_code,
+                duration_ms,
+                extra={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": response.status_code,
+                    "duration_ms": round(duration_ms, 2),
+                },
+            )
+            response.headers[CORRELATION_ID_HEADER] = correlation_id
+            return response
+        except Exception:
+            duration_ms = (time.perf_counter() - start_time) * 1000
+            logger.error(
+                "Request failed: %s %s in %.2fms",
+                request.method,
+                request.url.path,
+                duration_ms,
+                extra={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "duration_ms": round(duration_ms, 2),
+                },
+            )
+            raise

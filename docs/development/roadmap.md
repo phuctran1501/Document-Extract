@@ -42,12 +42,12 @@ Lộ trình được sắp xếp để tạo ra một vertical slice hoạt đ�
 
 ## Phase 4 — Tăng cường độ bền vững và đóng gói
 
-- [ ] Thực thi và test giới hạn kích thước upload có thể cấu hình.
-- [ ] Thêm correlation ID và structured logging.
-- [ ] Xác minh không có nội dung tài liệu nào bị ghi log.
-- [ ] Thêm Dockerfile và runtime chạy với quyền non-root.
-- [ ] Thêm CI cho lint, kiểm tra format và chạy test.
-- [ ] Tài liệu hóa health check và cấu hình service.
+- [x] Thực thi và test giới hạn kích thước upload có thể cấu hình.
+- [x] Thêm correlation ID và structured logging.
+- [x] Xác minh không có nội dung tài liệu nào bị ghi log.
+- [x] Thêm Dockerfile và runtime chạy với quyền non-root.
+- [x] Thêm CI cho lint, kiểm tra format và chạy test.
+- [x] Tài liệu hóa health check và cấu hình service.
 
 **Tiêu chí thoát:** build/test local và khởi động container thành công; các trường hợp lỗi mong đợi được bao phủ.
 

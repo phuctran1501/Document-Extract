@@ -8,11 +8,15 @@ from app.api.routes.text import router as text_router
 from app.core.config import get_settings
 from app.core.correlation import CorrelationIdMiddleware
 from app.core.errors import register_exception_handlers
+from app.core.logging import setup_logging
 
 
 def create_app() -> FastAPI:
     """Create and configure the DocuExtract FastAPI application instance."""
     settings = get_settings()
+
+    # Initialize structured logging
+    setup_logging(settings)
 
     app = FastAPI(
         title=settings.app_name,

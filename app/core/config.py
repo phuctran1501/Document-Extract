@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     # Upload constraints: default 10 MiB
     max_upload_size_bytes: int = 10 * 1024 * 1024
 
+    # Logging configuration
+    log_level: str = "INFO"
+    log_json_format: bool = True
+
     model_config = SettingsConfigDict(
         env_prefix="DOCUEXTRACT_",
         env_file=(".env", "app/.env"),
