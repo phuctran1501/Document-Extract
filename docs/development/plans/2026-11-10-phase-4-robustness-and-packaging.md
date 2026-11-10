@@ -1,6 +1,6 @@
 # Kế hoạch triển khai: Phase 4 — Tăng cường độ bền vững và đóng gói (Robustness and Packaging)
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Hoàn thành
 - **Đặc tả liên quan:** `docs/product/requirements.md` (FR-01, FR-06, NFR-01, NFR-02, NFR-03, NFR-06), `docs/architecture/architecture.md` (Mục 7 & 8), `docs/architecture/api-contract.md`
 - **Issue liên quan:** Phase 4 trong `docs/development/roadmap.md`
 
@@ -23,6 +23,7 @@
 ## 2. Phạm vi (Scope)
 
 ### Trong phạm vi
+
 1. **Bounded Streaming & Upload Size Enforcement:**
    - Kiểm tra sớm header `Content-Length`: Nếu vượt `max_upload_size_bytes`, từ chối ngay với HTTP 413 `FILE_TOO_LARGE` trước khi đọc stream.
    - Triển khai tiện ích `read_upload_file_bounded(file, max_bytes, chunk_size)` trong `app/core/streaming.py`: Đọc từng chunk nhỏ (64 KiB), tích lũy dung lượng và raise ngay `AppException(413, "FILE_TOO_LARGE")` nếu vượt giới hạn mà không đọc tiếp phần còn lại vào bộ nhớ.
@@ -51,6 +52,7 @@
    - Cập nhật `docs/operations/development-setup.md` và `.env.example`.
 
 ### Ngoài phạm vi (Explicit Non-Goals)
+
 - Không triển khai các dịch vụ tập trung log phức tạp (ELK, Fluentd, OpenTelemetry collector) bên trong service.
 - Không triển khai rate limiting hay authentication layer (thuộc quyền sở hữu của ASP.NET Core API hoặc API Gateway trong Phase 5+).
 - Không thêm database, message queue hay redis worker.
@@ -95,49 +97,49 @@ flowchart TD
 
 ## 4. Các bước triển khai tuần tự
 
-1. [ ] **Core Streaming:** Tạo `app/core/streaming.py` triển khai `read_upload_file_bounded(file, max_bytes)`.
-2. [ ] **Cấu hình Settings:** Cập nhật `app/core/config.py` và `.env.example` bổ sung `log_level` và `log_json_format`.
-3. [ ] **Structured Logging Module:** Tạo `app/core/logging.py` với `StructuredJsonFormatter` và hàm `setup_logging(settings)`.
-4. [ ] **Tích hợp Logging & Streaming vào App:**
+1. [x] **Core Streaming:** Tạo `app/core/streaming.py` triển khai `read_upload_file_bounded(file, max_bytes)`.
+2. [x] **Cấu hình Settings:** Cập nhật `app/core/config.py` và `.env.example` bổ sung `log_level` và `log_json_format`.
+3. [x] **Structured Logging Module:** Tạo `app/core/logging.py` với `StructuredJsonFormatter` và hàm `setup_logging(settings)`.
+4. [x] **Tích hợp Logging & Streaming vào App:**
    - Cập nhật `app/main.py`: Gọi `setup_logging()` khi khởi tạo app.
    - Cập nhật `app/api/routes/documents.py`: Kiểm tra `Content-Length` header và gọi `read_upload_file_bounded`.
    - Cập nhật `app/services/document_service.py`: Log metadata an toàn kèm correlation ID.
-5. [ ] **Đóng gói Docker:**
+5. [x] **Đóng gói Docker:**
    - Tạo `.dockerignore`.
    - Tạo `Dockerfile` với base `python:3.12-slim`, non-root user `appuser:10001`, `HEALTHCHECK`.
-6. [ ] **Cập nhật CI Workflow:**
+6. [x] **Cập nhật CI Workflow:**
    - Bổ sung bước kiểm tra build Docker vào `.github/workflows/ci.yml`.
-7. [ ] **Viết Test:**
+7. [x] **Viết Test:**
    - `tests/unit/test_streaming.py`: Kiểm tra chặn `Content-Length`, chặn đọc quá cỡ giữa chừng, đọc file bình thường, file rỗng.
    - `tests/unit/test_logging.py`: Kiểm tra format JSON, correlation ID tự động chèn vào log, và kiểm tra không lọt nội dung nhạy cảm (Zero Document Logging) với `caplog`.
    - `tests/integration/test_document_extract_api.py`: Thêm integration tests cho stream upload size limit.
-8. [ ] **Tài liệu hóa:**
+8. [x] **Tài liệu hóa:**
    - Tạo `docs/operations/service-configuration.md`.
    - Tạo `docs/architecture/decisions/ADR-002-structured-logging-and-robustness.md`.
    - Cập nhật `docs/operations/development-setup.md`.
    - Cập nhật `docs/development/roadmap.md`.
-9. [ ] **Xác minh & Báo cáo:** Chạy `ruff check`, `ruff format --check`, `pytest`.
+9. [x] **Xác minh & Báo cáo:** Chạy `ruff check`, `ruff format --check`, `pytest`.
 
 ## 5. Kế hoạch kiểm thử
 
-| Kịch bản | Mức độ test | Kết quả mong đợi |
-| -------- | ----------- | ---------------- |
-| File upload hợp lệ $\le$ 10 MiB | Unit & Integration | HTTP 200, log ra metadata kỹ thuật, có correlation ID, không log text. |
-| Header `Content-Length` vượt 10 MiB | Integration | HTTP 413 `FILE_TOO_LARGE` ngay lập tức mà không đọc stream. |
-| Chunked upload vượt 10 MiB giữa chừng | Unit & Integration | Ngắt stream ngay khi vượt ngưỡng, ném HTTP 413 mà không tốn thêm RAM. |
-| Structured Logging sinh ra JSON | Unit | Log format chứa timestamp, level, message, correlation_id hợp lệ. |
+| Kịch bản                                      | Mức độ test        | Kết quả mong đợi                                                                                              |
+| --------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| File upload hợp lệ $\le$ 10 MiB               | Unit & Integration | HTTP 200, log ra metadata kỹ thuật, có correlation ID, không log text.                                        |
+| Header `Content-Length` vượt 10 MiB           | Integration        | HTTP 413 `FILE_TOO_LARGE` ngay lập tức mà không đọc stream.                                                   |
+| Chunked upload vượt 10 MiB giữa chừng         | Unit & Integration | Ngắt stream ngay khi vượt ngưỡng, ném HTTP 413 mà không tốn thêm RAM.                                         |
+| Structured Logging sinh ra JSON               | Unit               | Log format chứa timestamp, level, message, correlation_id hợp lệ.                                             |
 | Không rò rỉ nội dung tài liệu ra Log (NFR-01) | Unit & Integration | Canary string ("SECRET_CANARY") xuất hiện trong text response nhưng hoàn toàn vắng mặt trong mọi log records. |
-| Endpoint `/health` hoạt động | Integration | HTTP 200, trả về status="ok", có header `X-Correlation-ID`. |
-| Dockerfile cú pháp và build | CI / Local | Docker build thành công, non-root user được thiết lập, CMD sẵn sàng. |
+| Endpoint `/health` hoạt động                  | Integration        | HTTP 200, trả về status="ok", có header `X-Correlation-ID`.                                                   |
+| Dockerfile cú pháp và build                   | CI / Local         | Docker build thành công, non-root user được thiết lập, CMD sẵn sàng.                                          |
 
 ## 6. Rủi ro và biện pháp giảm thiểu
 
 - **Rủi ro 1: Starlette UploadFile spooling file tạm ra đĩa với file lớn:**
-  - *Biện pháp:* Kiểm tra header `Content-Length` trước khi nhận body, và đọc bounded streaming theo chunks giúp hủy request ngay khi vượt 10 MiB, ngăn chặn triệt để việc spam file rác ra đĩa.
+  - _Biện pháp:_ Kiểm tra header `Content-Length` trước khi nhận body, và đọc bounded streaming theo chunks giúp hủy request ngay khi vượt 10 MiB, ngăn chặn triệt để việc spam file rác ra đĩa.
 - **Rủi ro 2: Log format JSON làm khó đọc khi debug cục bộ:**
-  - *Biện pháp:* Cho phép tắt JSON format thông qua biến môi trường `DOCUEXTRACT_LOG_JSON_FORMAT=false` để hiển thị text thân thiện khi phát triển local.
+  - _Biện pháp:_ Cho phép tắt JSON format thông qua biến môi trường `DOCUEXTRACT_LOG_JSON_FORMAT=false` để hiển thị text thân thiện khi phát triển local.
 - **Rủi ro 3: Chạy non-root trong Docker gặp lỗi quyền truy cập file:**
-  - *Biện pháp:* Thiết lập quyền sở hữu `chown -R appuser:appuser /app` trong quá trình build image trước khi chuyển `USER appuser`.
+  - _Biện pháp:_ Thiết lập quyền sở hữu `chown -R appuser:appuser /app` trong quá trình build image trước khi chuyển `USER appuser`.
 
 ## 7. Tài liệu cần cập nhật
 
@@ -166,4 +168,3 @@ uv run pytest
 
 - Người duyệt: [Chờ người dùng review và phê duyệt]
 - Sai lệch so với kế hoạch: [Chưa có]
-

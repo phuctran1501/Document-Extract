@@ -1,5 +1,7 @@
 """Integration tests for POST /api/v1/documents/extract."""
 
+import logging
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -253,3 +255,49 @@ def test_extract_zip_missing_document_xml_returns_415(
     assert response.status_code == 415
     body = response.json()
     assert body["error"]["code"] == "UNSUPPORTED_FILE_TYPE"
+
+
+# ==============================================================================
+# Phase 4: Robustness, Bounded Streaming & Log Security Tests
+# ==============================================================================
+
+
+def test_extract_oversized_content_length_header_rejected_early(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Oversized Content-Length header is rejected early with HTTP 413."""
+    small_settings = Settings(max_upload_size_bytes=100)
+    monkeypatch.setattr(
+        "app.services.document_service.get_settings", lambda: small_settings
+    )
+
+    pdf_bytes = create_text_pdf(["Small document text"])
+    files = {"file": ("test.pdf", pdf_bytes, "application/pdf")}
+    # Send a header claiming a size exceeding the 100-byte threshold
+    headers = {"Content-Length": "100000"}
+
+    response = client.post("/api/v1/documents/extract", files=files, headers=headers)
+
+    assert response.status_code == 413
+    body = response.json()
+    assert body["error"]["code"] == "FILE_TOO_LARGE"
+
+
+def test_extract_api_zero_document_logging(
+    client: TestClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Document text processed through the API is NEVER logged (NFR-01)."""
+    canary = "SUPER_SECRET_TOKEN_CANARY_INTEGRATION_TEST_98765"
+    pdf_bytes = create_text_pdf([canary])
+    files = {"file": ("classified.pdf", pdf_bytes, "application/pdf")}
+
+    with caplog.at_level(logging.DEBUG):
+        response = client.post("/api/v1/documents/extract", files=files)
+
+    assert response.status_code == 200
+    assert canary in response.json()["extraction"]["text"]
+
+    # Verify canary string is completely absent from all log records
+    assert canary not in caplog.text

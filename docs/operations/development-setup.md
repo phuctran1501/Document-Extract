@@ -59,6 +59,20 @@ Hãy xem lại diff sau khi format; không format các file không liên quan.
 
 Chỉ tạo file `.env` cục bộ khi các cài đặt yêu cầu. Commit file `.env.example` với các giá trị placeholder và thêm `.env` vào `.gitignore`. Không bao giờ đặt API key, mật khẩu, JWT secret hay URL riêng tư vào các file Markdown được theo dõi bởi Git.
 
-## 7. Docker (milestone sau)
+## 7. Chạy với Docker
 
-Các lệnh Docker nên được thêm vào sau khi Dockerfile và cấu hình compose tồn tại. Không hướng dẫn cộng tác viên chạy các lệnh không có trong repository. Tránh các lệnh reset volume mang tính phá hủy dữ liệu trừ khi người dùng có chủ ý xóa dữ liệu cục bộ.
+DocuExtract đã được đóng gói container hoàn chỉnh với Python 3.12 và quyền non-root:
+
+```bash
+# Build image
+docker build -t docuextract:latest .
+
+# Chạy container ở cổng 8000
+docker run -d -p 8000:8000 --name docuextract docuextract:latest
+
+# Kiểm tra log và trạng thái health check
+docker ps
+docker logs docuextract
+```
+
+Xem chi tiết tất cả các tùy chọn cấu hình tại [`docs/operations/service-configuration.md`](./service-configuration.md).
