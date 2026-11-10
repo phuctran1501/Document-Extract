@@ -14,4 +14,4 @@ docs
 .agents
 .codegraph
 *.md
-
+!README.md
