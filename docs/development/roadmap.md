@@ -53,11 +53,11 @@ Lộ trình được sắp xếp để tạo ra một vertical slice hoạt đ�
 
 ## Phase 5 — Bằng chứng tích hợp ASP.NET Core
 
-- [ ] Hoàn thiện API contract.
-- [ ] Chuẩn bị abstraction `IDocumentExtractor` cho .NET và adapter typed `HttpClient` trong Infrastructure của ứng dụng ASP.NET Core tiêu thụ.
-- [ ] Truyền cancellation và correlation ID.
-- [ ] Xử lý timeout, lỗi kết nối và các response lỗi từ downstream.
-- [ ] Thêm integration test chạy với một instance DocuExtract thực hoặc HTTP stub có kiểm soát.
+- [x] Hoàn thiện API contract.
+- [x] Chuẩn bị abstraction `IDocumentExtractor` cho .NET và adapter typed `HttpClient` trong Infrastructure của ứng dụng ASP.NET Core tiêu thụ.
+- [x] Truyền cancellation và correlation ID.
+- [x] Xử lý timeout, lỗi kết nối và các response lỗi từ downstream.
+- [x] Thêm integration test chạy với một instance DocuExtract thực hoặc HTTP stub có kiểm soát.
 
 **Tiêu chí thoát:** tầng Application của ASP.NET Core phụ thuộc vào một abstraction, trong khi adapter Infrastructure sở hữu các chi tiết transport HTTP.
 
