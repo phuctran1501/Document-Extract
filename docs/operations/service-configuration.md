@@ -72,8 +72,7 @@ Endpoint `/health` được thiết kế siêu nhẹ (stateless), không phụ t
 ```json
 {
   "status": "ok",
-  "app_name": "DocuExtract",
-  "version": "0.1.0"
+  "service": "docuextract"
 }
 ```
 

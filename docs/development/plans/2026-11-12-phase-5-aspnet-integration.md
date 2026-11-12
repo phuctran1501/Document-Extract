@@ -1,6 +1,6 @@
 # Kế hoạch triển khai: Phase 5 — Bằng chứng tích hợp ASP.NET Core (ASP.NET Core Integration Proof)
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Hoàn thành
 - **Đặc tả liên quan:** `docs/product/requirements.md`, `docs/architecture/architecture.md` (Mục 6), `docs/architecture/api-contract.md`, `AGENTS.md` (Mục 10), Skill `integrate-aspnet`
 - **Issue liên quan:** Phase 5 trong `docs/development/roadmap.md`
 
@@ -98,18 +98,18 @@ flowchart TD
 
 ## 4. Các bước triển khai tuần tự
 
-1. [ ] **Hoàn thiện API Contract:**
+1. [x] **Hoàn thiện API Contract:**
    - Cập nhật `docs/architecture/api-contract.md`: Kiểm tra và đồng bộ hóa các bảng mã lỗi, headers, và hướng dẫn tích hợp.
    - Sửa tài liệu `docs/operations/service-configuration.md` để khớp với schema `HealthResponse`.
-2. [ ] **Thiết kế tài liệu Tích hợp ASP.NET Core:**
+2. [x] **Thiết kế tài liệu Tích hợp ASP.NET Core:**
    - Tạo `docs/architecture/aspnet-integration.md` chứa đầy đủ kiến trúc, thiết kế tầng Application/Infrastructure, C# source code hoàn chỉnh và ví dụ test.
-3. [ ] **Bản ghi quyết định kiến trúc:**
+3. [x] **Bản ghi quyết định kiến trúc:**
    - Tạo `docs/architecture/decisions/ADR-003-aspnet-core-integration.md`.
-4. [ ] **Kiểm thử Contract Conformance phía DocuExtract:**
+4. [x] **Kiểm thử Contract Conformance phía DocuExtract:**
    - Tạo `tests/integration/test_contract_conformance.py` kiểm chứng OpenAPI schema, correlation ID round-trip, error envelope và status codes.
-5. [ ] **Cập nhật Roadmap & Kế hoạch:**
+5. [x] **Cập nhật Roadmap & Kế hoạch:**
    - Cập nhật `docs/development/roadmap.md` và kế hoạch này sang trạng thái Hoàn thành sau khi kiểm chứng.
-6. [ ] **Xác minh toàn diện:**
+6. [x] **Xác minh toàn diện:**
    - Chạy `uv run ruff format --check .`, `uv run ruff check .`, `uv run pytest`.
 
 ## 5. Kế hoạch kiểm thử

@@ -1,16 +1,18 @@
 # DocuExtract — API Contract (v1)
 
-**Trạng thái:** Contract đề xuất. Tài liệu OpenAPI được implement phải khớp với file này; cập nhật cả hai cùng lúc.
+**Trạng thái:** Đã hoàn thiện (Finalized v1). Đã kiểm chứng tương thích 100% với OpenAPI schema và ASP.NET Core client.
 
 ## 1. Quy ước chung
 
 - Base path: `/api/v1`
-- Content negotiation: JSON responses.
+- Content negotiation: JSON responses (`application/json`).
 - Upload: `multipart/form-data`.
 - File field: `file`.
-- Định dạng file được phép: PDF và DOCX.
-- Giới hạn upload mặc định: 10 MiB, có thể cấu hình.
-- Mã hóa văn bản: UTF-8 trong JSON responses.
+- Định dạng file được phép: PDF (`application/pdf`) và DOCX (`application/vnd.openxmlformats-officedocument.wordprocessingml.document`).
+- Giới hạn upload mặc định: 10 MiB (10,485,760 bytes), có thể cấu hình.
+- Bounded streaming: đọc stream theo chunks 64 KiB và kiểm tra sớm header `Content-Length`.
+- Correlation ID: truyền và nhận qua header `X-Correlation-ID`. Nếu client cung cấp, service sẽ bảo toàn; nếu client không cung cấp, service sẽ tự sinh mới dạng hex UUID.
+- Mã hóa văn bản: UTF-8, chuẩn hóa Unicode NFC trong JSON responses.
 
 ## 2. Health
 
@@ -118,11 +120,12 @@ Implementation có thể tinh chỉnh bảng này, nhưng các thay đổi phả
 
 Caller nên:
 - Gửi file dưới dạng multipart field `file`.
-- Đặt timeout rõ ràng phù hợp với kích thước tài liệu tối đa.
+- Đặt timeout rõ ràng phù hợp với kích thước tài liệu tối đa (khuyến nghị 30 giây).
 - Truyền `CancellationToken` xuyên suốt chuỗi gọi hàm của application.
 - Xử lý riêng biệt: `200`, `4xx`, `5xx`, timeout, connection failure, và JSON response không hợp lệ.
 - Giữ lại correlation ID để phục vụ chẩn đoán.
-- Tránh retry các upload non-idempotent một cách mù quáng. Retry policy phải tính đến kích thước file, timeout, và liệu việc xử lý có side effect hay không (MVP không nên có side effect).
+- Tránh retry các upload non-idempotent một cách mù quáng. Retry policy phải tính đến kích thước file, timeout, và liệu việc xử lý có side effect hay không (MVP không có side effect).
+- Xem chi tiết kiến trúc Clean Architecture, C# Interface, Typed HttpClient Adapter, và bộ test mẫu tại [`docs/architecture/aspnet-integration.md`](./aspnet-integration.md).
 
 ## 7. Chính sách thay đổi contract
 
