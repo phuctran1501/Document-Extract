@@ -63,10 +63,11 @@ Lộ trình được sắp xếp để tạo ra một vertical slice hoạt đ�
 
 ## Ý tưởng cho tương lai — chỉ sau khi có bằng chứng
 
-- OCR cho các PDF dạng scan.
-- Xử lý job bất đồng bộ / queue / worker.
-- Object storage.
-- Hiểu CV dựa trên LLM.
-- Xác thực giữa các service, rate limit và chính sách mạng cho production.
+- **Xác thực giữa các service (S2S Authentication Middleware):** Triển khai middleware kiểm tra header `X-Service-Api-Key` hoặc cấu hình mạng nội bộ Private VPC, chuẩn bị cho việc tích hợp production với các dịch vụ tiêu thụ bên ngoài (bao gồm dự án **NewsHub** ở giai đoạn `PROPOSED` Phase 2+).
+- OCR cho các PDF dạng scan (Tesseract/PaddleOCR).
+- Xử lý job bất đồng bộ / queue / worker (Celery/Redis hoặc RabbitMQ).
+- Object storage (S3/MinIO cho lưu trữ tạm thời có mã hóa).
+- Hiểu và phân tích cấu trúc tài liệu/CV nâng cao dựa trên LLM.
+- Rate limiting phân tán theo API Key/Client IP.
 
 Hãy tạo một ADR và cập nhật requirements trước khi thêm bất kỳ tính năng nào trong số này.

@@ -2,6 +2,11 @@
 
 Tài liệu này cung cấp thiết kế kiến trúc chuẩn mực, đặc tả hợp đồng, và mã nguồn mẫu C# cho ứng dụng ASP.NET Core tiêu thụ dịch vụ DocuExtract theo các nguyên tắc Clean Architecture.
 
+> [!NOTE] Trạng thái tích hợp trong dự án NewsHub (CMS Tòa soạn)
+> - **Trạng thái:** `PROPOSED` (Đề xuất cho Phase 2+, tuyệt đối không nhồi vào MVP v2.0.0 của NewsHub).
+> - **Ranh giới tiêu thụ (Consumer Contract):** Client ASP.NET Core chỉ tiêu thụ duy nhất endpoint trích xuất `POST /api/v1/documents/extract` phục vụ khởi tạo bản nháp bài viết (Draft Seed). Endpoint phụ `POST /api/v1/text/analyze` bị **loại bỏ hoàn toàn** khỏi consumer adapter vì .NET 10 tự đếm từ và tính thời gian đọc trực tiếp trong bộ nhớ C# (zero network latency).
+> - **Điều kiện tiên quyết Production:** Bắt buộc phải triển khai xác thực Service-to-Service (S2S Header `X-Service-Api-Key` hoặc mạng nội bộ Private VPC) trước khi tích hợp vào môi trường production.
+
 ---
 
 ## 1. Ranh Giới Kiến Trúc (Architecture Boundaries)
@@ -138,6 +143,13 @@ public sealed class DocuExtractConnectionException : DocuExtractException
     public DocuExtractConnectionException(string message, Exception? inner = null)
         : base(message, inner) { }
 }
+
+/// <summary>Lỗi phản hồi rỗng hoặc sai cấu trúc payload từ DocuExtract.</summary>
+public sealed class DocuExtractInvalidResponseException : DocuExtractException
+{
+    public DocuExtractInvalidResponseException(string message, Exception? inner = null)
+        : base(message, inner) { }
+}
 ```
 
 ---
@@ -189,6 +201,12 @@ public sealed class DocuExtractOptions
     public const string SectionName = "DocuExtract";
 
     public string BaseUrl { get; set; } = "http://localhost:8000";
+
+    /// <summary>
+    /// API Key xác thực Service-to-Service (Header X-Service-Api-Key). Bắt buộc ở Production khi gọi cross-service.
+    /// </summary>
+    public string? ApiKey { get; set; }
+
     public int TimeoutSeconds { get; set; } = 30;
     public long MaxFileSizeBytes { get; set; } = 10 * 1024 * 1024; // 10 MiB
 }
@@ -213,6 +231,7 @@ using Microsoft.Extensions.Options;
 public sealed class DocuExtractClient : IDocumentExtractor
 {
     private const string CorrelationHeader = "X-Correlation-ID";
+    private const string ApiKeyHeader = "X-Service-Api-Key";
     private readonly HttpClient _httpClient;
     private readonly DocuExtractOptions _options;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -260,6 +279,10 @@ public sealed class DocuExtractClient : IDocumentExtractor
             Content = content
         };
         request.Headers.Add(CorrelationHeader, correlationId);
+        if (!string.IsNullOrWhiteSpace(_options.ApiKey))
+        {
+            request.Headers.Add(ApiKeyHeader, _options.ApiKey);
+        }
 
         var stopwatch = Stopwatch.StartNew();
         HttpResponseMessage response;
@@ -300,7 +323,7 @@ public sealed class DocuExtractClient : IDocumentExtractor
 
             if (payload is null)
             {
-                throw new DocuExtractException("Received empty response payload from DocuExtract.");
+                throw new DocuExtractInvalidResponseException("Received empty response payload from DocuExtract.");
             }
 
             // Zero Document Logging: chỉ log metadata, không log text
@@ -402,6 +425,7 @@ public static class DocuExtractServiceCollectionExtensions
 {
   "DocuExtract": {
     "BaseUrl": "http://localhost:8000",
+    "ApiKey": "change-this-in-production-s2s-secret",
     "TimeoutSeconds": 30,
     "MaxFileSizeBytes": 10485760
   }

@@ -18,6 +18,8 @@ Mọi cấu hình đều được nạp thông qua Pydantic Settings với tiề
 | `DOCUEXTRACT_MAX_UPLOAD_SIZE_BYTES` | `int` | `10485760` (10 MiB) | Dung lượng tối đa cho phép của tệp upload. |
 | `DOCUEXTRACT_LOG_LEVEL` | `str` | `"INFO"` | Mức độ log (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`). |
 | `DOCUEXTRACT_LOG_JSON_FORMAT` | `bool` | `true` | Xuất log dạng JSON 1 dòng (production) hoặc text dễ đọc (dev). |
+| `DOCUEXTRACT_API_KEY` | `str` | `""` | Khóa bí mật xác thực Service-to-Service (S2S Header `X-Service-Api-Key`). Bắt buộc ở Production. |
+| `DOCUEXTRACT_REQUIRE_API_KEY` | `bool` | `false` | Bật/tắt bắt buộc kiểm tra S2S API Key (`false` ở local/dev, `true` khi deploy multi-service). |
 
 ### File cấu hình mẫu (`.env.example`):
 ```bash
@@ -28,6 +30,10 @@ DOCUEXTRACT_PORT=8000
 DOCUEXTRACT_MAX_UPLOAD_SIZE_BYTES=10485760
 DOCUEXTRACT_LOG_LEVEL=INFO
 DOCUEXTRACT_LOG_JSON_FORMAT=true
+
+# Service-to-Service Authentication (Planned for Production Cross-Service Deployment)
+DOCUEXTRACT_API_KEY=your-secure-random-s2s-api-key-here
+DOCUEXTRACT_REQUIRE_API_KEY=false
 ```
 
 ---

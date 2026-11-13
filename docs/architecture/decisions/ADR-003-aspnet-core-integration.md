@@ -40,6 +40,17 @@ DocuExtract được thiết kế như một service chuyên biệt phục vụ 
 **Tiêu cực / Đánh đổi**
 - Cần duy trì tính đồng bộ giữa schema Pydantic trong DocuExtract và các DTO contract trong C#. Thay đổi contract phải tuân thủ nghiêm ngặt chính sách versioning `/api/v1`.
 
+---
+
+## Cập nhật bổ sung (2026-11-13) — Trường hợp tích hợp với NewsHub CMS
+
+Dự án NewsHub (ASP.NET Core 10 Web API + React 19 Editorial CMS) đã đánh giá mức độ phù hợp kỹ thuật và thống nhất định vị tích hợp với các nguyên tắc:
+1. **Trạng thái:** `PROPOSED` (Dành riêng cho Phase 2+, tuyệt đối không nhồi vào phạm vi MVP v2.0.0 đã phê duyệt của NewsHub).
+2. **Ràng buộc Plain-text Draft Seed:** Văn bản trích xuất từ DocuExtract chỉ đóng vai trò hạt giống bản nháp (`Draft`) để tác giả/biên tập viên tiếp tục biên tập trên TipTap WYSIWYG editor. Không kỳ vọng DocuExtract bảo toàn styling phức tạp (heading cây phân cấp, bold/italic, ảnh nhúng).
+3. **Loại bỏ endpoint dư thừa:** NewsHub loại bỏ hoàn toàn việc gọi `POST /api/v1/text/analyze`. Tầng Application của .NET 10 tự tính số từ, số ký tự và `reading_time_minutes` trực tiếp trong RAM với chi phí CPU gần như bằng 0, loại bỏ hoàn toàn phụ thuộc mạng không cần thiết.
+4. **Điều kiện tiên quyết Service-to-Service (S2S):** Bắt buộc phải có cơ chế xác thực S2S (Header `X-Service-Api-Key` hoặc Private VPC Network) trước khi triển khai môi trường production.
+
+
 ## Xem xét lại khi
 
 - Khi khối lượng tài liệu tải lên vượt quá giới hạn xử lý đồng bộ và cần chuyển sang mô hình xử lý background job qua Message Broker (RabbitMQ/Azure Service Bus).
